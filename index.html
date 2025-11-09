@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tayan — быстрая медицинская помощь рядом</title>
+  <meta name="description" content="Tayan — мобильное приложение для быстрого доступа к квалифицированной медицинской помощи: студенты‑медики, медсёстры, врачи клиник и скорая помощь." />
+  <!-- Open Graph для красивого превью в мессенджерах -->
+  <meta property="og:title" content="Tayan — быстрый способ получить медицинскую помощь рядом" />
+  <meta property="og:description" content="В экстренных и полуэкстренных ситуациях помощь приходит быстро, безопасно и в нужном объёме." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://example.com/og.jpg" />
+
+  <style>
+    :root{
+      --navy:#0d1330;        /* тёмно-синий */
+      --blue:#2463ff;        /* синий акцент */
+      --ink:#0a0d1a;         /* почти чёрный для текста на светлом */
+      --bg:#ffffff;          /* белый фон */
+      --muted:#6f7791;       /* вторичный текст */
+      --card:#f5f7ff;        /* светлые карточки */
+      --ring:rgba(36,99,255,.25);
+      --shadow:0 10px 30px rgba(13,19,48,.15);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+    a{color:inherit}
+
+    /* Навбар */
+    .nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.75);backdrop-filter:saturate(160%) blur(10px);border-bottom:1px solid rgba(13,19,48,.06)}
+    .container{max-width:1080px;margin:0 auto;padding:0 20px}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+    .brand{display:flex;gap:12px;align-items:center;font-weight:800;color:var(--navy)}
+    .brand img{height:34px;width:auto}
+    .menu{/* removed hide on desktop */}
+    .menu a{padding:10px 12px;border-radius:12px;text-decoration:none;font-weight:600;color:var(--navy)}
+    .menu a:hover{background:rgba(36,99,255,.08)}
+    .cta{background:var(--blue);color:#fff;border:none;border-radius:12px;padding:10px 14px;font-weight:700;text-decoration:none;box-shadow:0 6px 16px rgba(36,99,255,.25)}
+    .cta:hover{transform:translateY(-1px)}
+
+    /* Бургер */
+    .burger{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      gap:6px;
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      background:#ffffff;
+      border:1px solid rgba(0,0,0,0.12);
+      box-shadow:0 4px 12px rgba(0,0,0,0.08);
+      position:relative;
+      z-index:2000;
+      cursor:pointer;
+    }
+    .burger span{
+      width:26px;
+      height:3px;
+      background:var(--navy);
+      border-radius:4px;
+      transition:transform .25s ease, opacity .25s ease;
+    }
+    .burger.active span:nth-child(1){transform:translateY(9px) rotate(45deg)}
+    .burger.active span:nth-child(2){opacity:0}
+    .burger.active span:nth-child(3){transform:translateY(-9px) rotate(-45deg)}
+
+    /* мобильный режим */: скрыть меню и показать бургер */
+    @media (max-width:860px){ .burger{display:flex} .menu{display:none} }
+    .mobile{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;background:#ffffff;transform:translateY(-110%);transition:transform .35s ease;z-index:1500;padding:32px 20px}
+    .mobile.open{transform:translateY(0)}
+    .mobile a{
+      opacity:0;
+      transform:translateY(20px);
+      animation:fadeUp .45s forwards;
+    }
+    @keyframes fadeUp{
+      to{opacity:1;transform:translateY(0)}
+    }
+    .mobile a{display:block;width:100%;max-width:560px;text-align:center;font-size:28px;line-height:1.4;padding:12px 10px;border-radius:12px;text-decoration:none;font-weight:700;color:var(--navy)}
+    .mobile a:hover{background:rgba(36,99,255,.08)}
+    .mobile .close{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:12px;border:1px solid rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--navy);background:#fff}
+    .mobile.open{transform:translateY(0)}
+    .mobile a{display:block;width:100%;max-width:560px;text-align:center;font-size:28px;line-height:1.4;padding:12px 10px;border-radius:12px;text-decoration:none;font-weight:700;color:var(--navy)}
+    .mobile a:hover{background:rgba(36,99,255,.08)}
+    .mobile.open{transform:translateX(0%)}
+    .mobile a{display:block;padding:14px 12px;border-radius:12px;text-decoration:none;font-weight:650;color:var(--navy)}
+    .mobile .cta{display:inline-block;margin-top:6px}
+    #overlay{position:fixed;inset:64px 0 0 0;background:rgba(13,19,48,.35);opacity:0;pointer-events:none;transition:.3s ease}
+    #overlay.show{opacity:1;pointer-events:auto}
+    body.no-scroll{overflow:hidden}
+
+    /* Герой */
+    .hero{position:relative;min-height:78vh;display:flex;align-items:center}
+    .hero:before{ /* размытая фотка скорой помощи */
+      content:"";position:absolute;inset:0;z-index:-2;
+      background:url('ambulance-bg.jpg') center/cover no-repeat;
+      filter:blur(6px) saturate(110%);transform:scale(1.06);
+    }
+    .hero:after{ /* затемнение для читаемости */
+      content:"";position:absolute;inset:0;z-index:-1;
+      background:linear-gradient(180deg, rgba(13,19,48,.35), rgba(13,19,48,.45));
+    }
+    .hero .wrap{max-width:1080px;margin:0 auto;padding:42px 20px;display:block}
+    .h1{font-size:42px;line-height:1.15;margin:0 0 16px 0;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.35)}
+    .lead{font-size:18px;color:#fff;opacity:.95;margin:0}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);font-weight:600;color:#fff}
+    .glass{background:rgba(255,255,255,.18);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.28);border-radius:22px;padding:22px;display:inline-block}
+    @media (max-width:860px){.h1{font-size:32px}}
+
+    /* Общие секции */
+    section{padding:56px 0;border-top:1px solid rgba(13,19,48,.06)}
+    h2{font-size:28px;color:var(--navy);margin:0 0 12px}
+    p{font-size:16px;line-height:1.7;color:var(--ink)}
+
+    /* Сетки */
+    .grid{display:grid;gap:16px}
+    .grid.cards{grid-template-columns:repeat(3,1fr)}
+    @media (max-width:980px){.grid.cards{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:640px){.grid.cards{grid-template-columns:1fr}}
+
+    /* Карточки */
+    .card{background:var(--card);border:1px solid rgba(13,19,48,.08);border-radius:var(--radius);padding:16px}
+    .card.check{position:relative}
+    .card.check:after{content:"✓";position:absolute;right:12px;top:12px;font-weight:900;color:var(--blue)}
+    .card h3{margin:6px 0 8px 0;color:var(--navy)}
+    .muted{color:var(--muted)}
+
+    /* Блок категорий (лёгкая/средняя/тяжёлая) */
+    .severity{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .sev{padding:16px;border:1px solid rgba(13,19,48,.08);border-radius:16px}
+    .sev strong{display:flex;align-items:center;gap:8px;color:var(--navy)}
+    .sev .dot{width:10px;height:10px;border-radius:50%}
+    .sev.light .dot{background:#5ac18e}
+    .sev.medium .dot{background:#f7b500}
+    .sev.heavy .dot{background:#ff5a5f}
+    @media (max-width:800px){.severity{grid-template-columns:1fr}}
+
+    /* Футер */
+    footer{background:#0f1435;color:#c9d2ff;margin-top:24px}
+    footer .container{padding:22px 20px}
+    .foot{display:flex;justify-content:space-between;gap:16px;align-items:center}
+    .foot small{opacity:.85}
+    @media(max-width:700px){.foot{flex-direction:column;align-items:flex-start;gap:8px}}
+
+    /* Фоновые элементы */
+    body:before, body:after{
+      content:"";position:fixed;z-index:-1;background:var(--card);opacity:.45;filter:blur(60px);
+      width:260px;height:260px;border-radius:40px;
+    }
+    body:before{top:6%;left:-60px}
+    body:after{bottom:10%;right:-40px}
+    .bg{position:fixed;inset:0;z-index:-2;pointer-events:none}
+    .bg .blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.35;animation:float 14s ease-in-out infinite}
+    .bg .b1{width:320px;height:320px;left:5%;top:30%;background:radial-gradient(circle at 30% 30%, #2463ff, transparent 60%)}
+    .bg .b2{width:260px;height:260px;right:8%;top:12%;background:radial-gradient(circle at 70% 40%, #0d1330, transparent 60%);animation-delay:3s}
+    .bg .b3{width:280px;height:280px;right:12%;bottom:10%;background:radial-gradient(circle at 50% 50%, #6ea0ff, transparent 60%);animation-delay:6s}
+    .bg .line{position:absolute;inset:auto;display:block;width:420px;height:420px;left:50%;top:60%;transform:translateX(-50%);opacity:.25}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+    /* Вспомогательные */
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .spacer{height:6px}
+    .reveal{opacity:0;transform:translateY(18px);transition:.6s ease}
+    .reveal.show{opacity:1;transform:translateY(0)}
+
+    /* Статистика */
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:18px}
+    .stat{background:var(--card);border:1px solid rgba(13,19,48,.08);border-radius:16px;padding:14px;text-align:center}
+    .stat .num{font-size:28px;font-weight:800;color:var(--navy)}
+    .stat .lbl{color:var(--muted)}
+
+    /* Floating buttons */
+    .fab{position:fixed;right:18px;bottom:18px;background:var(--blue);color:#fff;border:none;border-radius:999px;padding:14px 18px;font-weight:800;box-shadow:0 12px 24px rgba(36,99,255,.35);text-decoration:none}
+    .fab:after{content:"Экстренно";margin-left:8px;font-weight:700;opacity:.9}
+    .fab{animation:pulse 2s infinite}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(36,99,255,.45)}70%{box-shadow:0 0 0 18px rgba(36,99,255,0)}100%{box-shadow:0 0 0 0 rgba(36,99,255,0)}}
+
+    #toTop{position:fixed;right:18px;bottom:76px;border:1px solid rgba(13,19,48,.12);background:#fff;border-radius:999px;padding:10px 12px;box-shadow:0 8px 18px rgba(13,19,48,.15);cursor:pointer;display:none}
+    #toTop.show{display:block}
+    .spacer{height:6px}
+    @keyframes fadeInUp{0%{opacity:0;transform:translateY(30px);}100%{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+  <!-- Навигация -->
+  <nav class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <!-- ЗАМЕНИ src на свой файл логотипа -->
+        <img src="IMG_3704.PNG" alt="Логотип Tayan" />
+        <span>Tayan</span>
+      </div>
+      <div class="menu" id="menu" style="display:flex; gap:20px;">
+        <a href="#about">О проекте</a>
+        <a href="#problem">Проблема</a>
+        <a href="#solution">Решение</a>
+      </div>
+      
+    </div>
+    
+  </nav>
+  <div id="overlay" onclick="toggleMenu()"></div>
+  <div class="bg">
+    <span class="blob b1"></span>
+    <span class="blob b2"></span>
+    <span class="blob b3"></span>
+    <svg class="line" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 80 C 140 40, 220 120, 300 90 S 460 40, 580 80" stroke="#2463ff" stroke-width="2" stroke-linecap="round"/>
+      <path d="M40 160 C 160 120, 240 200, 320 170 S 480 120, 560 150" stroke="#0d1330" stroke-opacity=".4" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- Главная -->
+  <header id="home" class="hero">
+    <div class="wrap">
+      <div class="row" style="margin-bottom:12px">
+        <span class="pill">Скорая помощь • Лёгкие/средние/тяжёлые случаи</span>
+      </div>
+      <div class="glass">
+        <h1 class="h1">Добро пожаловать в наше приложение — быстрый способ получить медицинскую помощь рядом с вами.</h1>
+        <p class="lead">Приложение создано командой <strong>Tayan</strong>, чтобы в экстренных и полуэкстренных ситуациях помощь приходила быстро, безопасно и в нужном объёме.</p>
+        <div class="row" style="margin-top:14px">
+          <a class="cta" href="#how">Как это работает</a>
+          <a class="pill" href="#about">Подробнее о проекте</a>
+        </div>
+      </div>
+    </div>
+  </header>
+  <!-- декоративная волна -->
+  <svg viewBox="0 0 1440 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="display:block;width:100%;height:60px">
+    <path d="M0,64 C320,128 480,0 720,48 C960,96 1120,48 1440,64 L1440,120 L0,120 Z" fill="rgba(13,19,48,0.06)"/>
+  </svg>
+
+  <!-- О проекте -->
+  <section id="about">
+    <div class="container" style="display:flex;flex-wrap:wrap;align-items:center;gap:32px;">
+      <div style="flex:1 1 360px;min-width:260px;">
+        <h2>О проекте</h2>
+        <p>Мы, студенты колледжа <strong>TSI AUCA</strong>, в рамках финального междисциплинарного проекта разрабатываем мобильное приложение для быстрого доступа к квалифицированной медицинской помощи. Наше решение объединяет пользователей, врачей, студентов-медиков и волонтёров, сокращая время реакции и обеспечивая безопасную поддержку в разных ситуациях.</p>
+        <div class="stats">
+          <div class="stat reveal"><div class="num">10+</div><div class="lbl">Партнёров</div></div>
+          <div class="stat reveal"><div class="num">250+</div><div class="lbl">Специалистов</div></div>
+          <div class="stat reveal"><div class="num">∼8 мин</div><div class="lbl">Среднее время реакции</div></div>
+        </div>
+      </div>
+      <div style="flex:1 1 300px;display:flex;justify-content:center;">
+        <img src="Снимок экрана 2025-11-10 в 02.16.59.jpg" alt="Tayan" style="width:260px;max-width:100%;border-radius:22px;box-shadow:0 12px 28px rgba(0,0,0,0.18);opacity:0;animation:fadeInUp .8s ease forwards;"/>
+      </div>
+    </div>
+  </section>
+
+  <!-- Проблема -->
+  <section id="problem">
+    <div class="container">
+      <h2>Проблема</h2>
+      <p>В экстренных ситуациях люди часто не знают, к кому обратиться и как быстро получить помощь. Существующие службы перегружены, а неправильно выбранный специалист может увеличить риск осложнений.</p>
+    </div>
+  </section>
+
+  <!-- Решение -->
+  <section id="solution">
+    <div class="container">
+      <h2>Решение</h2>
+      <p>Приложение автоматически подбирает подходящего специалиста в зависимости от тяжести проблемы: <strong>студенты‑медики</strong> — для лёгких случаев, <strong>медсёстры и врачи частных клиник</strong> — для средних, <strong>бригады скорой помощи</strong> — для тяжёлых. Мы сокращаем время реакции, гарантируем квалифицированную помощь и сотрудничаем с надёжными партнёрами.</p>
+
+      <div class="severity" style="margin-top:14px">
+        <div class="sev light">
+          <strong><span class="dot"></span> Лёгкие случаи</strong>
+          <p class="muted">Порезы, ссадины, лёгкие ожоги, недомогание. Помощь оказывают студенты‑медики под кураторством.</p>
+        </div>
+        <div class="sev medium">
+          <strong><span class="dot"></span> Средние случаи</strong>
+          <p class="muted">Высокая температура, выраженная боль, подозрение на перелом. Выезжают медсёстры/врачи частных клиник.</p>
+        </div>
+        <div class="sev heavy">
+          <strong><span class="dot"></span> Тяжёлые случаи</strong>
+          <p class="muted">Потеря сознания, сильное кровотечение, ДТП, инсульт/инфаркт. Подключается скорая помощь 103.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Как работает -->
+  <section id="how">
+    <div class="container">
+      <h2>Как работает приложение</h2>
+      <div class="grid cards" style="margin-top:8px">
+        <div class="card check">
+          <h3>1) Выбор категории</h3>
+          <p>Пользователь выбирает категорию проблемы: <em>лёгкая</em>, <em>средняя</em> или <em>тяжёлая</em>.</p>
+        </div>
+        <div class="card check">
+          <h3>2) Поиск ближайших</h3>
+          <p>Система находит ближайших доступных специалистов (студенты, медсёстры, врачи, скорая) и показывает их на карте/списком.</p>
+        </div>
+        <div class="card check">
+          <h3>3) Связь и помощь</h3>
+          <p>Пользователь связывается с выбранным специалистом и получает помощь на месте или дистанционно.</p>
+        </div>
+        <div class="card check">
+          <h3>4) Партнёры</h3>
+          <p>Приложение интегрируется с надёжными партнёрами (напр., Красный Полумесяц и частные клиники) для максимальной эффективности.</p>
+        </div>
+        <div class="card check">
+          <h3>5) Безопасность</h3>
+          <p>Верификация специалистов, журнал действий и передача координат для быстрого реагирования.</p>
+        </div>
+        <div class="card check">
+          <h3>6) Отзывы и улучшения</h3>
+          <p>После помощи пользователь оставляет оценку/комментарий — это улучшает качество сервиса.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Преимущества -->
+  <section id="benefits">
+    <div class="container">
+      <h2>Преимущества нашего приложения</h2>
+      <div class="grid cards" style="margin-top:8px">
+        <div class="card"><h3>Быстрый доступ</h3><p>Квалифицированная помощь в любой ситуации — рядом с вами.</p></div>
+        <div class="card"><h3>Правильный специалист</h3><p>Подбор по тяжести случая: от студента‑медика до бригады скорой помощи.</p></div>
+        <div class="card"><h3>Партнёрства</h3><p>Клиники, волонтёры, Красный Полумесяц — объединяем усилия для результата.</p></div>
+        <div class="card"><h3>Меньше рисков</h3><p>Сокращаем время реакции, снижаем вероятность осложнений.</p></div>
+        <div class="card"><h3>Прозрачность</h3><p>Профили специалистов, рейтинги, подтверждённые навыки.</p></div>
+        <div class="card"><h3>Масштабируемость</h3><p>Работает в городе и в регионах, поддерживает разные каналы связи.</p></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="row">
+        <span class="pill" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)">Среднее время отклика — около 8 минут</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container foot">
+      <div class="brand" style="color:#c9d2ff">
+        <img src="IMG_3704.PNG" alt="Tayan" style="height:28px"/>
+        <span>Tayan</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Плавное появление элементов при скролле
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target);} });
+    },{threshold:.15});
+    document.querySelectorAll('.reveal, .card, .sev').forEach(el=>{el.classList.add('reveal'); io.observe(el)});
+
+    // Кнопка наверх и экстренная кнопка
+    const toTop = document.getElementById('toTop');
+    window.addEventListener('scroll', ()=>{
+      if(window.scrollY>600){ toTop.classList.add('show'); }
+      else{ toTop.classList.remove('show'); }
+    });
+    toTop?.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+  </script>
+  <button id="toTop" title="Наверх">↑</button>
+  <a class="fab" href="tel:103">103</a>
+</body>
+</html>
